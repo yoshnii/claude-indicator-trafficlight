@@ -133,6 +133,12 @@ The wrapper behavior is process-based:
 - Codex exits successfully -> `DONE`
 - Codex exits with an error, is interrupted, or the Codex CLI is missing -> `NEED_INPUT`
 
+By default, the wrapper starts Codex with `--dangerously-bypass-hook-trust` so the configured local traffic-light hooks can run in Terminal sessions. To disable that for one command:
+
+```bash
+CODEX_TRAFFIC_LIGHT_BYPASS_HOOK_TRUST=0 ./scripts/codex_with_traffic_light.sh exec "your task"
+```
+
 If your Codex CLI is not named `codex` or is not on `PATH`, set `CODEX_BIN`:
 
 ```bash
@@ -162,6 +168,7 @@ After that, typing `codex ...` in Terminal calls the traffic-light wrapper autom
 - `codex exec "your task"` -> yellow while the Codex CLI process is running, then green on success
 - `codex` -> yellow while the interactive Codex CLI session is open, then green after you exit
 - failed or interrupted Codex process -> red
+- if Codex emits a `permission_request` hook -> red
 
 To bypass the wrapper for one command:
 
