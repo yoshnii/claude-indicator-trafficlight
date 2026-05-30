@@ -1,0 +1,60 @@
+{
+  "user_prompt_submit": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh WORKING",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "pre_tool_use": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh WORKING",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "permission_request": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh NEED_INPUT",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "post_tool_use": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh WORKING",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "stop": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh DONE",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}

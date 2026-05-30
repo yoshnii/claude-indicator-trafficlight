@@ -93,6 +93,37 @@ tail -n 50 /tmp/claude-traffic-light-hook.log
 tail -n 50 /tmp/traffic-light-send.log
 ```
 
+## Install Codex Support
+
+Codex has a different integration surface than Claude Code. This repository includes two Codex integrations:
+
+- `notify`: reliable turn-ended notification, used to set the light back to green when Codex finishes a turn.
+- `hooks.path`: optional Codex lifecycle hooks for `user_prompt_submit`, `pre_tool_use`, `permission_request`, `post_tool_use`, and `stop`.
+
+Run:
+
+```bash
+node scripts/install_codex_traffic_light.mjs
+```
+
+The installer updates `~/.codex/config.toml`, creates a one-time backup at `~/.codex/config.toml.traffic-light.bak`, and preserves the existing Computer Use notification by chaining it from `scripts/codex_notify_traffic_light.sh`.
+
+Restart Codex after installing.
+
+Expected behavior, if the current Codex build accepts lifecycle hooks:
+
+- Prompt submitted or tool use starts -> `WORKING`
+- Permission request -> `NEED_INPUT`
+- Turn stop -> `DONE`
+
+If lifecycle hooks are not accepted in a future Codex build, the `notify` fallback should still set `DONE` at turn end.
+
+## ChatGPT
+
+ChatGPT web/desktop does not expose a local Claude-style hook that can observe every model state and directly write to USB serial. ChatGPT custom apps use MCP/Apps, and remote MCP servers can expose explicit tools, but that is not the same as automatic local status hooks.
+
+A practical ChatGPT integration would be manual/tool-driven: expose a `set_traffic_light` tool through an MCP app and ask ChatGPT to call it. Automatic "thinking/done/input-required" status mirroring is not currently available through the normal ChatGPT app UI.
+
 ## Limitations
 
-This setup targets Claude Code hooks. It does not automatically integrate with Claude desktop, Claude web, Cursor, or Codex.
+Claude Code has the cleanest lifecycle hook support. Codex support depends on the currently installed Codex build accepting lifecycle hooks from `hooks.path`; `notify` remains available as a turn-ended fallback. Claude desktop/web, ChatGPT desktop/web, and Cursor do not use this repository's local hook files automatically.
