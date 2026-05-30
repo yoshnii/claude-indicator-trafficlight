@@ -1,60 +1,81 @@
 {
-  "user_prompt_submit": [
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh DONE",
+          "async": false,
+          "timeoutSec": 5
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
     {
       "hooks": [
         {
           "type": "command",
           "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh WORKING",
-          "timeout": 5
+          "async": false,
+          "timeoutSec": 5
         }
       ]
     }
   ],
-  "pre_tool_use": [
+  "PreToolUse": [
     {
       "matcher": "*",
       "hooks": [
         {
           "type": "command",
           "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh WORKING",
-          "timeout": 5
+          "async": false,
+          "timeoutSec": 5
         }
       ]
     }
   ],
-  "permission_request": [
+  "PermissionRequest": [
     {
       "matcher": "*",
       "hooks": [
         {
           "type": "command",
           "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh NEED_INPUT",
-          "timeout": 5
+          "async": false,
+          "timeoutSec": 5
         }
       ]
     }
   ],
-  "post_tool_use": [
+  "PostToolUse": [
     {
       "matcher": "*",
       "hooks": [
         {
           "type": "command",
           "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh WORKING",
-          "timeout": 5
+          "async": false,
+          "timeoutSec": 5
         }
       ]
     }
   ],
-  "stop": [
+  "Stop": [
     {
       "hooks": [
         {
           "type": "command",
           "command": "/Users/shan/Documents/Codex/2026-05-27/github-cursor-call-code-ai-project/scripts/claude_traffic_light_hook.sh DONE",
-          "timeout": 5
+          "async": false,
+          "timeoutSec": 5
         }
       ]
     }
-  ]
+  ],
+  "PreCompact": [],
+  "PostCompact": [],
+  "SubagentStart": [],
+  "SubagentStop": []
 }

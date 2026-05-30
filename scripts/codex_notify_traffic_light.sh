@@ -8,7 +8,7 @@ ORIGINAL_NOTIFY="/Users/shan/.codex/computer-use/Codex Computer Use.app/Contents
 printf '%s codex_notify args=%s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >> "$LOG_FILE"
 "$BASE_DIR/scripts/send_traffic_light.sh" DONE >> "$LOG_FILE" 2>&1 || true
 
-if [ -x "$ORIGINAL_NOTIFY" ] && [ "$#" -ge 2 ]; then
+if [ -x "$ORIGINAL_NOTIFY" ] && [ "$#" -ge 1 ]; then
   "$ORIGINAL_NOTIFY" "$@" >> "$LOG_FILE" 2>&1 || true
 fi
 

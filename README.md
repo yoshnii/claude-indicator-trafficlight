@@ -98,7 +98,7 @@ tail -n 50 /tmp/traffic-light-send.log
 Codex has a different integration surface than Claude Code. This repository includes two Codex integrations:
 
 - `notify`: reliable turn-ended notification, used to set the light back to green when Codex finishes a turn.
-- `hooks.path`: optional Codex lifecycle hooks for `user_prompt_submit`, `pre_tool_use`, `permission_request`, `post_tool_use`, and `stop`.
+- `[hooks]`: Codex lifecycle hooks for `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PermissionRequest`, `PostToolUse`, and `Stop`.
 - `scripts/codex_with_traffic_light.sh`: a reliable wrapper for one-shot Codex CLI tasks.
 
 Run:
@@ -107,17 +107,23 @@ Run:
 node scripts/install_codex_traffic_light.mjs
 ```
 
-The installer updates `~/.codex/config.toml`, creates a one-time backup at `~/.codex/config.toml.traffic-light.bak`, and preserves the existing Computer Use notification by chaining it from `scripts/codex_notify_traffic_light.sh`.
+The installer updates `~/.codex/config.toml`, creates a one-time backup at `~/.codex/config.toml.traffic-light.bak`, writes the Codex `[hooks]` table directly, and preserves the existing Computer Use notification by chaining it from `scripts/codex_notify_traffic_light.sh`.
 
 Restart Codex after installing.
 
-Expected behavior, if the current Codex build accepts lifecycle hooks:
+Expected behavior in Codex interactive Terminal sessions:
 
-- Prompt submitted or tool use starts -> `WORKING`
-- Permission request -> `NEED_INPUT`
-- Turn stop -> `DONE`
+- `SessionStart` -> `DONE`
+- `UserPromptSubmit` or `PreToolUse` -> `WORKING`
+- `PermissionRequest` -> `NEED_INPUT`
+- `Stop` -> `DONE`
 
-If lifecycle hooks are not accepted in a future Codex build, the `notify` fallback should still set `DONE` at turn end.
+Verified with Codex CLI `0.135.0-alpha.1`:
+
+- Interactive `codex` sessions trigger the hook commands for prompts, tool use, permission requests, and stop.
+- `codex exec` reliably triggers the process wrapper and `notify` fallback; it may not trigger every lifecycle hook internally.
+
+If lifecycle hooks change in a future Codex build, the `notify` fallback should still set `DONE` at turn end.
 
 ### Codex CLI Wrapper
 
@@ -145,7 +151,7 @@ If your Codex CLI is not named `codex` or is not on `PATH`, set `CODEX_BIN`:
 CODEX_BIN=/path/to/codex ./scripts/codex_with_traffic_light.sh exec "your task"
 ```
 
-This wrapper is best for `codex exec ...` style one-shot tasks. In an interactive Codex session, it only tracks the lifetime of the whole CLI process, not each individual prompt inside that process.
+For `codex exec ...` style one-shot tasks, the wrapper tracks the process lifetime. For interactive `codex` sessions, the wrapper covers process start/exit and Codex `[hooks]` cover individual prompts, tool use, permission requests, and stop events.
 
 ### Terminal Command Integration
 
@@ -184,4 +190,4 @@ A practical ChatGPT integration would be manual/tool-driven: expose a `set_traff
 
 ## Limitations
 
-Claude Code has the cleanest lifecycle hook support. Codex support depends on the currently installed Codex build accepting lifecycle hooks from `hooks.path`; `notify` remains available as a turn-ended fallback, and the Codex CLI wrapper is available for one-shot CLI tasks. Claude desktop/web, ChatGPT desktop/web, and Cursor do not use this repository's local hook files automatically.
+Claude Code has the cleanest lifecycle hook support. Codex support depends on the currently installed Codex build accepting the `[hooks]` table in `~/.codex/config.toml`; `notify` remains available as a turn-ended fallback, and the Codex CLI wrapper is available for CLI tasks. Claude desktop/web, ChatGPT desktop/web, and Cursor do not use this repository's local hook files automatically.

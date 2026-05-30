@@ -27,56 +27,100 @@ function upsertLineByPrefix(text, prefix, line) {
   return `${line}\n${text}`;
 }
 
-function upsertHooksPath(text) {
-  if (/\[hooks\]/.test(text)) {
-    if (/^\s*path\s*=.*/m.test(text)) {
-      return text.replace(/^\s*path\s*=.*/m, `path = "${escapeTomlString(hooksPath)}"`);
-    }
-    return text.replace(/\[hooks\]\n/, `[hooks]\npath = "${escapeTomlString(hooksPath)}"\n`);
-  }
-  return `${text.trimEnd()}\n\n[hooks]\npath = "${escapeTomlString(hooksPath)}"\n`;
-}
-
 function hook(command) {
   return {
     type: "command",
     command: `${hookScript} ${command}`,
-    timeout: 5
+    async: false,
+    timeoutSec: 5
   };
 }
 
 const hooksConfig = {
-  user_prompt_submit: [
+  SessionStart: [
+    {
+      hooks: [hook("DONE")]
+    }
+  ],
+  UserPromptSubmit: [
     {
       hooks: [hook("WORKING")]
     }
   ],
-  pre_tool_use: [
+  PreToolUse: [
     {
       matcher: "*",
       hooks: [hook("WORKING")]
     }
   ],
-  permission_request: [
+  PermissionRequest: [
     {
       matcher: "*",
       hooks: [hook("NEED_INPUT")]
     }
   ],
-  post_tool_use: [
+  PostToolUse: [
     {
       matcher: "*",
       hooks: [hook("WORKING")]
     }
   ],
-  stop: [
+  Stop: [
     {
       hooks: [hook("DONE")]
     }
-  ]
+  ],
+  PreCompact: [],
+  PostCompact: [],
+  SubagentStart: [],
+  SubagentStop: []
 };
 
 fs.writeFileSync(hooksPath, `${JSON.stringify(hooksConfig, null, 2)}\n`);
+
+function tomlHook(command) {
+  return `{ type = "command", command = "${escapeTomlString(`${hookScript} ${command}`)}", async = false, timeout = 5 }`;
+}
+
+function tomlGroup(command, matcher = null) {
+  const matcherPart = matcher ? `matcher = "${escapeTomlString(matcher)}", ` : "";
+  return `{ ${matcherPart}hooks = [${tomlHook(command)}] }`;
+}
+
+function hooksToml() {
+  return [
+    "[hooks]",
+    `SessionStart = [${tomlGroup("DONE")}]`,
+    `UserPromptSubmit = [${tomlGroup("WORKING")}]`,
+    `PreToolUse = [${tomlGroup("WORKING", "*")}]`,
+    `PermissionRequest = [${tomlGroup("NEED_INPUT", "*")}]`,
+    `PostToolUse = [${tomlGroup("WORKING", "*")}]`,
+    `Stop = [${tomlGroup("DONE")}]`,
+    "PreCompact = []",
+    "PostCompact = []",
+    "SubagentStart = []",
+    "SubagentStop = []"
+  ].join("\n");
+}
+
+function removeHooksTables(text) {
+  const lines = text.split(/\r?\n/);
+  const kept = [];
+  let skipping = false;
+
+  for (const line of lines) {
+    const section = line.match(/^\s*\[([^\]]+)\]\s*$/);
+    if (section) {
+      const name = section[1].trim();
+      skipping = name === "hooks" || name.startsWith("hooks.");
+    }
+    if (!skipping) {
+      kept.push(line);
+    }
+  }
+
+  return kept.join("\n").trimEnd();
+}
 
 let config = fs.existsSync(configPath) ? fs.readFileSync(configPath, "utf8") : "";
 if (config && !fs.existsSync(`${configPath}.traffic-light.bak`)) {
@@ -87,10 +131,10 @@ config = upsertLineByPrefix(
   "notify =",
   `notify = ["${escapeTomlString(notifyScript)}", "turn-ended"]`
 );
-config = upsertHooksPath(config);
+config = `${removeHooksTables(config)}\n\n${hooksToml()}\n`;
 
 fs.mkdirSync(path.dirname(configPath), { recursive: true });
 fs.writeFileSync(configPath, config.endsWith("\n") ? config : `${config}\n`);
 console.log(`Updated ${configPath}`);
 console.log(`Codex notify: ${notifyScript}`);
-console.log(`Codex hooks: ${hooksPath}`);
+console.log(`Codex hooks backup JSON: ${hooksPath}`);
