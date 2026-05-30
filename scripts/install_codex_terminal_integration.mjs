@@ -10,6 +10,22 @@ const zshrcPath = path.join(os.homedir(), ".zshrc");
 const startMarker = "# >>> codex traffic light";
 const endMarker = "# <<< codex traffic light";
 
+function findDefaultCodexBinary() {
+  const candidates = [
+    process.env.CODEX_BIN,
+    "/Applications/Codex.app/Contents/Resources/codex",
+    "/opt/homebrew/bin/codex",
+    "/usr/local/bin/codex"
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return "codex";
+}
+
 function shellQuote(value) {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
@@ -61,20 +77,31 @@ const integration = `# Codex traffic light Terminal integration.
 # Source this file from ~/.zshrc to wrap the codex CLI command.
 
 _codex_traffic_light_wrapper=${shellQuote(wrapperScript)}
+_codex_traffic_light_codex_bin=${shellQuote(findDefaultCodexBinary())}
+
+_codex_traffic_light_run_codex() {
+  if [[ "$_codex_traffic_light_codex_bin" == */* ]]; then
+    "$_codex_traffic_light_codex_bin" "$@"
+  else
+    command "$_codex_traffic_light_codex_bin" "$@"
+  fi
+}
 
 codex() {
+  _codex_traffic_light_codex_bin="\${CODEX_BIN:-$_codex_traffic_light_codex_bin}"
+
   if [ "\${CODEX_TRAFFIC_LIGHT_DISABLE:-}" = "1" ]; then
-    command codex "$@"
+    _codex_traffic_light_run_codex "$@"
     return $?
   fi
 
   if [ -x "$_codex_traffic_light_wrapper" ]; then
-    CODEX_BIN="\${CODEX_BIN:-codex}" "$_codex_traffic_light_wrapper" "$@"
+    CODEX_BIN="$_codex_traffic_light_codex_bin" "$_codex_traffic_light_wrapper" "$@"
     return $?
   fi
 
   printf '%s\\n' "Codex traffic light wrapper is missing: $_codex_traffic_light_wrapper" >&2
-  command codex "$@"
+  _codex_traffic_light_run_codex "$@"
 }
 `;
 

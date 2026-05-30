@@ -149,7 +149,7 @@ To make the wrapper automatic in macOS Terminal or any zsh terminal, install the
 node scripts/install_codex_terminal_integration.mjs
 ```
 
-The installer writes `~/.codex/codex-traffic-light.zsh`, updates `~/.zshrc`, and keeps a one-time backup at `~/.zshrc.codex-traffic-light.bak`.
+The installer writes `~/.codex/codex-traffic-light.zsh`, updates `~/.zshrc`, and keeps a one-time backup at `~/.zshrc.codex-traffic-light.bak`. It auto-detects the Codex CLI from common locations, including `/Applications/Codex.app/Contents/Resources/codex`.
 
 Then restart Terminal, or run:
 
