@@ -141,6 +141,34 @@ CODEX_BIN=/path/to/codex ./scripts/codex_with_traffic_light.sh exec "your task"
 
 This wrapper is best for `codex exec ...` style one-shot tasks. In an interactive Codex session, it only tracks the lifetime of the whole CLI process, not each individual prompt inside that process.
 
+### Terminal Command Integration
+
+To make the wrapper automatic in macOS Terminal or any zsh terminal, install the shell integration:
+
+```bash
+node scripts/install_codex_terminal_integration.mjs
+```
+
+The installer writes `~/.codex/codex-traffic-light.zsh`, updates `~/.zshrc`, and keeps a one-time backup at `~/.zshrc.codex-traffic-light.bak`.
+
+Then restart Terminal, or run:
+
+```bash
+source ~/.zshrc
+```
+
+After that, typing `codex ...` in Terminal calls the traffic-light wrapper automatically:
+
+- `codex exec "your task"` -> yellow while the Codex CLI process is running, then green on success
+- `codex` -> yellow while the interactive Codex CLI session is open, then green after you exit
+- failed or interrupted Codex process -> red
+
+To bypass the wrapper for one command:
+
+```bash
+CODEX_TRAFFIC_LIGHT_DISABLE=1 codex --version
+```
+
 ## ChatGPT
 
 ChatGPT web/desktop does not expose a local Claude-style hook that can observe every model state and directly write to USB serial. ChatGPT custom apps use MCP/Apps, and remote MCP servers can expose explicit tools, but that is not the same as automatic local status hooks.
