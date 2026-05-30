@@ -99,6 +99,7 @@ Codex has a different integration surface than Claude Code. This repository incl
 
 - `notify`: reliable turn-ended notification, used to set the light back to green when Codex finishes a turn.
 - `hooks.path`: optional Codex lifecycle hooks for `user_prompt_submit`, `pre_tool_use`, `permission_request`, `post_tool_use`, and `stop`.
+- `scripts/codex_with_traffic_light.sh`: a reliable wrapper for one-shot Codex CLI tasks.
 
 Run:
 
@@ -118,6 +119,28 @@ Expected behavior, if the current Codex build accepts lifecycle hooks:
 
 If lifecycle hooks are not accepted in a future Codex build, the `notify` fallback should still set `DONE` at turn end.
 
+### Codex CLI Wrapper
+
+For a more reliable command-line workflow, run Codex through the wrapper:
+
+```bash
+./scripts/codex_with_traffic_light.sh exec "your task"
+```
+
+The wrapper behavior is process-based:
+
+- Before Codex starts -> `WORKING`
+- Codex exits successfully -> `DONE`
+- Codex exits with an error, is interrupted, or the Codex CLI is missing -> `NEED_INPUT`
+
+If your Codex CLI is not named `codex` or is not on `PATH`, set `CODEX_BIN`:
+
+```bash
+CODEX_BIN=/path/to/codex ./scripts/codex_with_traffic_light.sh exec "your task"
+```
+
+This wrapper is best for `codex exec ...` style one-shot tasks. In an interactive Codex session, it only tracks the lifetime of the whole CLI process, not each individual prompt inside that process.
+
 ## ChatGPT
 
 ChatGPT web/desktop does not expose a local Claude-style hook that can observe every model state and directly write to USB serial. ChatGPT custom apps use MCP/Apps, and remote MCP servers can expose explicit tools, but that is not the same as automatic local status hooks.
@@ -126,4 +149,4 @@ A practical ChatGPT integration would be manual/tool-driven: expose a `set_traff
 
 ## Limitations
 
-Claude Code has the cleanest lifecycle hook support. Codex support depends on the currently installed Codex build accepting lifecycle hooks from `hooks.path`; `notify` remains available as a turn-ended fallback. Claude desktop/web, ChatGPT desktop/web, and Cursor do not use this repository's local hook files automatically.
+Claude Code has the cleanest lifecycle hook support. Codex support depends on the currently installed Codex build accepting lifecycle hooks from `hooks.path`; `notify` remains available as a turn-ended fallback, and the Codex CLI wrapper is available for one-shot CLI tasks. Claude desktop/web, ChatGPT desktop/web, and Cursor do not use this repository's local hook files automatically.
